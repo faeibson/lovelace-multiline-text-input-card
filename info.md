@@ -1,3 +1,19 @@
+# multiline-text-input-card
+
+This is a simple lovelace card to display a multiline text input field bound on an `input_text` or `var` entity.
+
+However, snarky-snark's `var` [component](https://github.com/snarky-snark/home-assistant-variables/) is recommended to use since Home Assistant's `input_text` is limited to a maximum of only 255 characters. At this point I will not forget to mention that this great component is capable of so much more - have a look at it!
+
+Plus, I borrowed some code and inspiration from [benct's](https://github.com/benct) awesome [Xiaomi Vacuum Card](https://github.com/benct/lovelace-xiaomi-vacuum-card) - many thanks for that one, Ben!
+
+
+[![release](https://img.shields.io/github/v/release/faeibson/lovelace-multiline-text-input-card)](https://github.com/faeibson/lovelace-multiline-text-input-card/releases)
+![code_size](https://img.shields.io/github/languages/code-size/faeibson/lovelace-multiline-text-input-card)
+![license](https://img.shields.io/github/license/faeibson/lovelace-multiline-text-input-card)
+[![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg)](https://github.com/hacs/integration)
+
+![Screenshot](https://raw.githubusercontent.com/faeibson/lovelace-multiline-text-input-card/master/screenshot.png)
+
 ## Options
 
 | Name | Type | Default | Description
@@ -13,7 +29,7 @@
 | buttons | object/bool | *(see below)* | Set to `false` to hide button row
 | icons | object | *(see below)* | Set custom button icons (same keys as `buttons` object)
 
-*\* Note: If necessary, the entity's min/max length attributes will be taken into account and overwrite the config.*
+(*) Note: If necessary, the entity's min/max length attributes will be taken into account and overwrite the config.
 
 ### Buttons object
 
@@ -23,7 +39,7 @@
 | paste | bool | `true` | Show or hide clipboard paste button (*)
 | clear | bool | `true` | Show or hide clear button
 
-*\* Note: Clipboard paste does not work in all browsers!*
+(*) Note: Clipboard paste does not work in all browsers!
 
 ### Icons object
 
@@ -36,8 +52,6 @@
 ## Examples
 
 Don't forget to add your `input_text` or `var` entity in your `configuration.yaml`! ;)
-
-![Screenshot](https://raw.githubusercontent.com/faeibson/lovelace-multiline-text-input-card/master/screenshot.png)
 
 ### Simple config example:
 ```yaml
