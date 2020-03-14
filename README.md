@@ -7,10 +7,12 @@ However, snarky-snark's `var` [component](https://github.com/snarky-snark/home-a
 Plus, I borrowed some code and inspiration from [benct's](https://github.com/benct) awesome [Xiaomi Vacuum Card](https://github.com/benct/lovelace-xiaomi-vacuum-card) - many thanks for that one, Ben!
 
 
-[![release](https://img.shields.io/github/v/release/faeibson/lovelace-multiline-text-input-card)](https://github.com/faeibson/lovelace-multiline-text-input-card/releases)
-[![code_size](https://img.shields.io/github/languages/code-size/faeibson/lovelace-multiline-text-input-card)]()
-![license](https://img.shields.io/github/license/faeibson/lovelace-multiline-text-input-card)
-[![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg)](https://github.com/hacs/integration)
+[![release](https://img.shields.io/github/v/release/faeibson/lovelace-multiline-text-input-card?style=flat-square)](https://github.com/faeibson/lovelace-multiline-text-input-card/releases)
+![code_size](https://img.shields.io/github/languages/code-size/faeibson/lovelace-multiline-text-input-card?style=flat-square)
+![license](https://img.shields.io/github/license/faeibson/lovelace-multiline-text-input-card?style=flat-square)
+[![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg?style=flat-square)](https://github.com/hacs/integration)
+
+![Screenshot](https://raw.githubusercontent.com/faeibson/lovelace-multiline-text-input-card/master/screenshot.png)
 
 ## Setup
 
@@ -44,7 +46,7 @@ resources:
 | buttons | object/bool | *(see below)* | Set to `false` to hide button row
 | icons | object | *(see below)* | Set custom button icons (same keys as `buttons` object)
 
-*\* Note: If necessary, the entity's min/max length attributes will be taken into account and overwrite the config.*
+(*) Note: If necessary, the entity's min/max length attributes will be taken into account and overwrite the config.
 
 ### Buttons object
 
@@ -54,7 +56,7 @@ resources:
 | paste | bool | `true` | Show or hide clipboard paste button (*)
 | clear | bool | `true` | Show or hide clear button
 
-*\* Note: Clipboard paste does not work in all browsers!*
+(*) Note: Clipboard paste does not work in all browsers!
 
 ### Icons object
 
@@ -67,8 +69,6 @@ resources:
 ## Examples
 
 Don't forget to add your `input_text` or `var` entity in your `configuration.yaml`! ;)
-
-![Screenshot](https://raw.githubusercontent.com/faeibson/lovelace-multiline-text-input-card/master/screenshot.png)
 
 ### Simple config example:
 ```yaml
