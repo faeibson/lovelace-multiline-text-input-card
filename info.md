@@ -1,34 +1,3 @@
-# multiline-text-input-card
-
-This is a simple lovelace card to display a multiline text input field bound on an `input_text` or `var` entity.
-
-However, snarky-snark's `var` [component](https://github.com/snarky-snark/home-assistant-variables/) is recommended to use since Home Assistant's `input_text` is limited to a maximum of only 255 characters. At this point I will not forget to mention that this great component is capable of so much more - have a look at it!
-
-Plus, I borrowed some code and inspiration from [benct's](https://github.com/benct) awesome [Xiaomi Vacuum Card](https://github.com/benct/lovelace-xiaomi-vacuum-card) - many thanks for that one, Ben!
-
-
-[![release](https://img.shields.io/github/v/release/faeibson/lovelace-multiline-text-input-card)](https://github.com/faeibson/lovelace-multiline-text-input-card/releases)
-[![code_size](https://img.shields.io/github/languages/code-size/faeibson/lovelace-multiline-text-input-card)]()
-![license](https://img.shields.io/github/license/faeibson/lovelace-multiline-text-input-card)
-[![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg)](https://github.com/hacs/integration)
-
-## Setup
-
-Download [lovelace-multiline-text-input-card.js](https://raw.githubusercontent.com/faeibson/lovelace-multiline-text-input-card/master/lovelace-multiline-text-input-card.js)
-to `/www/lovelace-multiline-text-input-card/` folder and add the following lines to the `resources` section in your `ui-lovelace.yaml` file:
-```yaml
-resources:
-  - url: /local/lovelace-multiline-text-input-card/lovelace-multiline-text-input-card.js
-    type: module
-```
-
-OR install using [HACS](https://hacs.xyz/) and add this instead:
-```yaml
-resources:
-  - url: /community_plugin/lovelace-multiline-text-input-card/lovelace-multiline-text-input-card.js
-    type: module
-```
-
 ## Options
 
 | Name | Type | Default | Description
