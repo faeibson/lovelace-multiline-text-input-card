@@ -14,6 +14,13 @@ Plus, I borrowed some code and inspiration from [benct's](https://github.com/ben
 
 ![Screenshot](https://raw.githubusercontent.com/faeibson/lovelace-multiline-text-input-card/master/screenshot.png)
 
+*Default appearance with save, paste and clear buttons, and a max_length of 50.*
+
+
+![Screenshot](https://raw.githubusercontent.com/faeibson/lovelace-multiline-text-input-card/master/screenshot_minmax.png)
+
+*Appearance of the min_length behaviour. The save button is highlighted and disabled (as is the autosave function).*
+
 ## Setup
 
 Download [lovelace-multiline-text-input-card.js](https://raw.githubusercontent.com/faeibson/lovelace-multiline-text-input-card/master/lovelace-multiline-text-input-card.js)
@@ -70,13 +77,16 @@ resources:
 
 Don't forget to add your `input_text` or `var` entity in your `configuration.yaml`! ;)
 
-### Simple config example:
+### Simple config example
 ```yaml
 - type: custom:lovelace-multiline-text-input-card
   entity: input_text.input_text_entity
 ```
 
-### Advanced configuration:
+With the simplest configuration applied, min_length and max_length solely depend on the entity. Default appearance with three buttons for save, paste and clear and their respective icons. The card title will be the entity's *friendly_name* attribute. Autosave is turned off, as is the save-on-clear.
+
+
+### Advanced configuration
 ```yaml
 - type: custom:lovelace-multiline-text-input-card
   autosave: true
@@ -93,3 +103,5 @@ Don't forget to add your `input_text` or `var` entity in your `configuration.yam
     paste: mdi:some-icon
     clear: mdi:other-icon
 ```
+
+In this example, the min_length and max_length behaviour of the entity will be overwritten, if possible. That means, the allowed text length range can be narrowed down, but of course not increased. The card title is set manually and the save button will not be shown in favour of the enabled autosave function. Last but not least, the icons of the paste and clear buttons will be changed.
