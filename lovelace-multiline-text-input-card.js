@@ -131,7 +131,7 @@
 
 		clearText() {
 			clearTimeout(this.state.autosave_timeout);
-			setText('');
+			this.setText('');
 		}
 
 		pasteText() {
