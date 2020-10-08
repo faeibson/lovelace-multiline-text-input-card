@@ -86,7 +86,7 @@
 		}
 
 		render() {
-			return html`
+			return this.stateObj ? html`
 				<ha-card .hass="${this._hass}" .config="${this._config}" class="background">
 		  			${this.state.title ? html`<div class="card-header">${this.state.title}</div>` : null}
 			  		<div class="card-content">
@@ -98,7 +98,7 @@
 				  		<div class="flex">
 							${Object.keys(this.state.buttons).map(this.renderButton.bind(this))}
 				  		</div>` : null}
-				</ha-card>`;
+				</ha-card>` : null;
 		}
 
 		getCardSize() {
@@ -117,13 +117,18 @@
 		}
 
 		getText() {
-			return this.shadowRoot.querySelector(".textarea").value;
+			return this.shadowRoot ? this.shadowRoot.querySelector(".textarea").value : "";
 		}
 
 		setText(val, entity_update) {
+			if(!this.shadowRoot) {
+				return false;
+			}
+
 			if(entity_update === true) {
 				this.state.last_updated_text = val;
 			}
+			
 			this.shadowRoot.querySelector(".textarea").value = val;
 			this.resizeTextarea();
 			this.updateCharactersInfoText();
@@ -136,6 +141,10 @@
 
 		pasteText() {
 			clearTimeout(this.state.autosave_timeout);
+			if(!this.shadowRoot) {
+				return false;
+			}
+				
 			let elem = this.shadowRoot.querySelector(".textarea");
 			if(elem) {
 				elem.focus();
@@ -164,6 +173,9 @@
 		}
 
 		updateCharactersInfoText() {
+			if(!this.shadowRoot) {
+				return false;
+			}
 			let textLength = this.shadowRoot.querySelector(".textarea").value.length;
 			let button_save = this.shadowRoot.querySelector("#button-save");
 			let disable_button = false;
@@ -212,6 +224,9 @@
 		}
 
 		resizeTextarea() {
+			if(!this.shadowRoot) {
+				return false;
+			}
 			let textArea = this.shadowRoot.querySelector('.textarea');
 			let textAreaComputedStyle = getComputedStyle(textArea);
 			textArea.style.height = "auto";
@@ -369,4 +384,4 @@
 	}
 
 	customElements.define('lovelace-multiline-text-input-card', LovelaceMultilineTextInput);
-})(window.LitElement || Object.getPrototypeOf(customElements.get("hui-view")));
+})(window.LitElement || Object.getPrototypeOf(customElements.get("hui-masonry-view") || customElements.get("hui-view")));
