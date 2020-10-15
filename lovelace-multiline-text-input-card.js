@@ -48,6 +48,9 @@
 					width: 100%;
 					word-spacing: inherit;
 				}
+				.text-center {
+					text-align: center;
+				}
 				.text-bold {
 					font-weight: bold;
 				}
@@ -69,6 +72,9 @@
 				.hidden {
 					display: none;
 				}
+				.position-absolute {
+					position: absolute;
+				}
 				.opacity-0 {
 					opacity: 0 !important;
 				}
@@ -80,7 +86,6 @@
 					pointer-events: none;
 				}
 				#serviceMessage {
-					position: absolute;
 					padding: 5px;
 					background-color: var(--primary-background-color);
 					border: 1px solid var(--primary-color);
@@ -110,10 +115,11 @@
 						<textarea maxlength="${this.state.max_length !== -1 ? this.state.max_length : ""}" @keyup="${() => this.onKeyupTextarea()}" class="textarea" placeholder="${this.state.placeholder_text}">${this.getState()}</textarea>
 						<span class="text-red text-small text-italic text-left" id="spanMinCharactersInfoText"></span>
 						<span class="text-small text-italic text-right" id="spanMaxCharactersInfoText"></span>
+						${!this.state.showButtons ? html`<div id="serviceMessage" class="text-center text-small invisible opacity-0">&nbsp;</div>` : null}
 			  		</div>
 			  		${this.state.showButtons ? html`
 				  		<div class="flex">
-			  				<div id="serviceMessage" class="text-small invisible opacity-0"></div>
+			  				<div id="serviceMessage" class="position-absolute text-small invisible opacity-0">&nbsp;</div>
 							${Object.keys(this.state.buttons_ordered).map(this.renderButton.bind(this))}
 				  		</div>` : null}
 				</ha-card>` : null;
@@ -270,13 +276,17 @@
 		}
 
 		displayMessage(service, success) {
-			// todo: translations
-			if(!this.shadowRoot || !service || service.length < 1) {
+			if(!this.state.show_success_messages || !this.shadowRoot || !service || service.length < 1) {
 				return;
 			}
 
 			let serviceMessageContainer = this.shadowRoot.querySelector('#serviceMessage');
 
+			if(!serviceMessageContainer) {
+				return;
+			}
+
+			// todo: translations
 			let message = "";
 			if(success) {
 				if(service == "save") {
@@ -302,7 +312,7 @@
 				}, 1500);
 				setTimeout(function() {
 					serviceMessageContainer.classList.add("invisible");
-					serviceMessageContainer.innerHTML = "";
+					serviceMessageContainer.innerHTML = "&nbsp;";
 				}, 2000);
 			}
 		}
@@ -382,6 +392,7 @@
 				min_length: parseInt(config.min_length) || 0,
 				placeholder_text: config.placeholder_text || "",
 				save_on_clear: config.save_on_clear === true,
+				show_success_messages: config.show_success_messages !== false,
 				title: config.title,
 
 				autosave_timeout: null,
