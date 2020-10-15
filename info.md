@@ -32,6 +32,7 @@ Plus, I borrowed some code and inspiration from [benct's](https://github.com/ben
 | max_length | int/bool | `false` | The maximum text length to be allowed (*)
 | placeholder_text | string | | Placeholder text to be displayed when empty
 | save_on_clear | bool | `false` | Save empty text after pressing the clear button (no effect along with `min_length`)
+| show_success_messages | bool | `true` | Display message whether backend calls (e.g. saving) were successful or not
 | title | string | *friendly_name* | The card title (if undefined, falls back to the entity's `friendly_name` attribute)
 | buttons | object/bool | *(see below)* | Set to `false` to hide button row
 | icons | object | *(see below)* | Set custom button icons (same keys as `buttons` object)
@@ -42,9 +43,11 @@ Plus, I borrowed some code and inspiration from [benct's](https://github.com/ben
 
 | Name | Type | Default | Description
 | ---- | ---- | ------- | -----------
-| save | bool | `true` | Show or hide save button
-| paste | bool | `true` | Show or hide clipboard paste button (*)
-| clear | bool | `true` | Show or hide clear button
+| save | int/bool | `1` | Show or hide save button
+| paste | int/bool | `2` | Show or hide clipboard paste button (*)
+| clear | int/bool | `3` | Show or hide clear button
+
+You can now arrange buttons by giving them indices, beginning from the left. True/false still works as a value, keeping the default arrangement save / paste / clear.
 
 (*) Note: Clipboard paste does not work in all browsers!
 
@@ -77,14 +80,14 @@ With the simplest configuration applied, min_length and max_length solely depend
   max_length: 50
   min_length: 10
   placeholder_text: 'Text entered here is going to be saved automatically when between 10 and 50 characters length.'
+  show_success_messages: false
   title: Multiline text input card
   buttons:
+    clear: 1
+    paste: 2
     save: false
-    paste: true
-    clear: true
   icons:
-    paste: mdi:some-icon
     clear: mdi:other-icon
 ```
 
-In this example, the min_length and max_length behaviour of the entity will be overwritten, if possible. That means, the allowed text length range can be narrowed down, but of course not increased. The card title is set manually and the save button will not be shown in favour of the enabled autosave function. Last but not least, the icons of the paste and clear buttons will be changed.
+In this example, the min_length and max_length behaviour of the entity will be overwritten, if possible. That means, the allowed text length range can be narrowed down, but of course not increased. The card title is set manually and the save button will not be shown in favour of the enabled autosave function. The clear button will appear on the left with the paste button on the right. Last but not least, the icon of the clear button will be changed.

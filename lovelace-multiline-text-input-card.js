@@ -23,6 +23,8 @@
 				.button {
 					cursor: pointer;
 					padding: 16px;
+					opacity: 1;
+					transition: opacity 0.5s linear;
 				}
 				.textarea {
 					background: inherit;
@@ -67,9 +69,24 @@
 				.hidden {
 					display: none;
 				}
+				.opacity-0 {
+					opacity: 0 !important;
+				}
+				.invisible {
+					visibility: hidden;
+				}
 				.button-disabled {
 					cursor: auto;
 					pointer-events: none;
+				}
+				#serviceMessage {
+					position: absolute;
+					padding: 5px;
+					background-color: var(--primary-background-color);
+					border: 1px solid var(--primary-color);
+					border-radius: 3px;
+					opacity: 1;
+					transition: opacity 0.5s linear;
 				}
 			`;
 		}
@@ -96,7 +113,8 @@
 			  		</div>
 			  		${this.state.showButtons ? html`
 				  		<div class="flex">
-							${Object.keys(this.state.buttons).map(this.renderButton.bind(this))}
+			  				<div id="serviceMessage" class="text-small invisible opacity-0"></div>
+							${Object.keys(this.state.buttons_ordered).map(this.renderButton.bind(this))}
 				  		</div>` : null}
 				</ha-card>` : null;
 		}
@@ -245,8 +263,47 @@
 			if(this.state.entity_type === 'input_text' || this.state.entity_type === 'var') {
 				let value = (typeof this.state.service_values[service] === 'function' ? this.state.service_values[service]() : this.state.service_values[service]);
 				if(this.state.service[service]) {
-					this._hass.callService(this.state.entity_type, this.state.service[service], {entity_id: this.stateObj.entity_id, value: value});
+					let _this = this;
+					this._hass.callService(this.state.entity_type, this.state.service[service], {entity_id: this.stateObj.entity_id, value: value}).then(function(response) { _this.displayMessage(service, true) }, function(error) { _this.displayMessage(service, false) });
 				}
+			}
+		}
+
+		displayMessage(service, success) {
+			// todo: translations
+			if(!this.shadowRoot || !service || service.length < 1) {
+				return;
+			}
+
+			let serviceMessageContainer = this.shadowRoot.querySelector('#serviceMessage');
+
+			let message = "";
+			if(success) {
+				if(service == "save") {
+					message = "The content has been saved.";
+				}
+			}
+			else {
+				if(service == "save") {
+					message = "An error occurred in the backend while saving!";
+				}
+			}
+
+			if(message.length > 0) {
+				serviceMessageContainer.innerHTML = message;
+				serviceMessageContainer.classList.remove("invisible");
+				serviceMessageContainer.classList.remove("opacity-0");
+				let buttons = this.shadowRoot.querySelectorAll(".button");
+				buttons.forEach(elem => elem.classList.add("opacity-0"));
+
+				setTimeout(function() {
+					serviceMessageContainer.classList.add("opacity-0");
+					buttons.forEach(elem => elem.classList.remove("opacity-0"));
+				}, 1500);
+				setTimeout(function() {
+					serviceMessageContainer.classList.add("invisible");
+					serviceMessageContainer.innerHTML = "";
+				}, 2000);
 			}
 		}
 
@@ -296,9 +353,9 @@
 			};
 
 			const buttons = {
-				save: true,
-				paste: true,
-				clear: true,
+				save: 1,
+				paste: 2,
+				clear: 3,
 			};
 
 			const icons = {
@@ -335,11 +392,20 @@
 
 				actions: Object.assign({}, actions),
 				buttons: Object.assign({}, buttons, config.buttons),
+				buttons_ordered: {},
 				hints: Object.assign({}, hints),
 				icons: Object.assign({}, icons, config.icons),
 				service: Object.assign({}, services[entity_type]),
 				service_values: Object.assign({}, service_values),
 			};
+
+			// filter out invalid values and buttons not to be displayed
+			let state_buttons = Object.fromEntries(Object.entries(this.state.buttons).filter(([key, value]) => value === true || (!isNaN(value) && value !== 0)));
+			// get ordered button keys
+			state_buttons = Object.keys(state_buttons).sort(function(a, b) { return state_buttons[a] - state_buttons[b]; });
+			// rebuild object with key => value
+			this.state.buttons_ordered = {};
+			state_buttons.forEach(key => this.state.buttons_ordered[key] = this.state.buttons[key]);
 
 			this.state.min_length = Math.max(this.state.min_length, 0);
 
