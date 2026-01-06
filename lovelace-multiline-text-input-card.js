@@ -131,7 +131,7 @@
 
 		renderButton(key) {
 			return this.state.buttons[key]
-				? html`<div class="button" title="${this.state.hints[key]}" id="button-${key}" @tap="${() => { if(this.callAction(key) !== false) { this.callService(key); }}}"><ha-icon icon="${this.state.icons[key]}"></ha-icon></div>`
+				? html`<div class="button" title="${this.state.hints[key]}" id="button-${key}" @tap="${() => { if(this.callAction(key) !== false) { this.callService(key); }}}" @click="${() => { if(this.callAction(key) !== false) { this.callService(key); }}}"><ha-icon icon="${this.state.icons[key]}"></ha-icon></div>`
 				: null;
 		}
 
