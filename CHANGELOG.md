@@ -1,6 +1,9 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## 1.0.5
+- Smaller refactorings, added the hide_title option
+
 ## 1.0.4
 - Added the possibility to rearrange the buttons
 - Added the possibility to display success messages of backend calls

@@ -1,6 +1,13 @@
 ((LitElement) => {
 	const html = LitElement.prototype.html;
 	const css = LitElement.prototype.css;
+	const version = "1.0.5";
+
+	console.info(
+    `%c   multiline-text-input-card   \n%c   Version ${version}   `,
+    "color: #ffffff; font-weight: bold; background: #006391",
+    "color: #ffffff; font-weight: bold; background: #1a6385"
+);
 
 	class LovelaceMultilineTextInput extends LitElement {
 
@@ -9,7 +16,7 @@
 				_hass: {},
 				_config: {},
 				stateObj: {},
-				state: {}
+				config: {}
 			}
 		}
 
@@ -25,6 +32,16 @@
 					padding: 16px;
 					opacity: 1;
 					transition: opacity 0.5s linear;
+				}
+				.button-disabled {
+					cursor: auto;
+					pointer-events: none;
+				}
+				.hidden {
+					display: none;
+				}
+				.invisible {
+					visibility: hidden;
 				}
 				.textarea {
 					background: inherit;
@@ -47,12 +64,14 @@
 					word-wrap: break-word;
 					width: 100%;
 					word-spacing: inherit;
-				}
-				.text-center {
-					text-align: center;
+					max-width: 100%;
+					min-width: 100%;
 				}
 				.text-bold {
 					font-weight: bold;
+				}
+				.text-center {
+					text-align: center;
 				}
 				.text-italic {
 					font-style: italic; 
@@ -69,21 +88,14 @@
 				.text-small {
 					font-size: 11px;
 				}
-				.hidden {
-					display: none;
+				.opacity-0 {
+					opacity: 0 !important;
 				}
 				.position-absolute {
 					position: absolute;
 				}
-				.opacity-0 {
-					opacity: 0 !important;
-				}
-				.invisible {
-					visibility: hidden;
-				}
-				.button-disabled {
-					cursor: auto;
-					pointer-events: none;
+				.w-full {
+					width: 100%;
 				}
 				#serviceMessage {
 					padding: 5px;
@@ -101,7 +113,7 @@
 			this.updateComplete.then(() => {
 				let new_state = _this.getState();
 				// only overwrite if state has changed since last overwrite
-				if(_this.state.last_updated_text === null || new_state !== _this.state.last_updated_text) {
+				if(_this.config.last_updated_text === null || new_state !== _this.config.last_updated_text) {
 					_this.setText(new_state, true);
 				}
 			});
@@ -110,17 +122,17 @@
 		render() {
 			return this.stateObj ? html`
 				<ha-card .hass="${this._hass}" .config="${this._config}" class="background">
-		  			${this.state.title ? html`<div class="card-header">${this.state.title}</div>` : null}
+					<div class="card-header ${this.config.hideTitle ? 'hidden' : ''}">${this.config.title}</div>
 			  		<div class="card-content">
-						<textarea maxlength="${this.state.max_length !== -1 ? this.state.max_length : ""}" @keyup="${() => this.onKeyupTextarea()}" class="textarea" placeholder="${this.state.placeholder_text}">${this.getState()}</textarea>
+						<textarea maxlength="${this.config.max_length !== -1 ? this.config.max_length : ""}" @keyup="${() => this.onKeyupTextarea()}" class="textarea" placeholder="${this.config.placeholder_text}">${this.getState()}</textarea>
 						<span class="text-red text-small text-italic text-left" id="spanMinCharactersInfoText"></span>
 						<span class="text-small text-italic text-right" id="spanMaxCharactersInfoText"></span>
-						${!this.state.showButtons ? html`<div id="serviceMessage" class="text-center text-small invisible opacity-0">&nbsp;</div>` : null}
+						${!this.config.showButtons ? html`<div id="serviceMessage" class="text-center text-small invisible opacity-0">&nbsp;</div>` : null}
 			  		</div>
-			  		${this.state.showButtons ? html`
-				  		<div class="flex">
+			  		${this.config.showButtons ? html`
+				  		<div class="flex w-full">
 			  				<div id="serviceMessage" class="position-absolute text-small invisible opacity-0">&nbsp;</div>
-							${Object.keys(this.state.buttons_ordered).map(this.renderButton.bind(this))}
+							${Object.keys(this.config.buttons_ordered).map(this.renderButton.bind(this))}
 				  		</div>` : null}
 				</ha-card>` : null;
 		}
@@ -130,13 +142,13 @@
 		}
 
 		renderButton(key) {
-			return this.state.buttons[key]
-				? html`<div class="button" title="${this.state.hints[key]}" id="button-${key}" @tap="${() => { if(this.callAction(key) !== false) { this.callService(key); }}}"><ha-icon icon="${this.state.icons[key]}"></ha-icon></div>`
+			return this.config.buttons[key]
+				? html`<div class="button" title="${this.config.hints[key]}" id="button-${key}" @tap="${() => { if(this.callAction(key) !== false) { this.callService(key); }}}"><ha-icon icon="${this.config.icons[key]}"></ha-icon></div>`
 				: null;
 		}
 
 		getState() {
-			const value = this.stateObj ? this.stateObj.state : this.state.default_text;
+			const value = this.stateObj ? this.stateObj.state : this.config.default_text;
 			return value.replace("\\n", "\n");
 		}
 
@@ -150,7 +162,7 @@
 			}
 
 			if(entity_update === true) {
-				this.state.last_updated_text = val;
+				this.config.last_updated_text = val;
 			}
 			
 			this.shadowRoot.querySelector(".textarea").value = val;
@@ -159,12 +171,12 @@
 		}
 
 		clearText() {
-			clearTimeout(this.state.autosave_timeout);
+			clearTimeout(this.config.autosave_timeout);
 			this.setText('');
 		}
 
 		pasteText() {
-			clearTimeout(this.state.autosave_timeout);
+			clearTimeout(this.config.autosave_timeout);
 			if(!this.shadowRoot) {
 				return false;
 			}
@@ -183,10 +195,10 @@
 		}
 
 		onKeyupTextarea() {
-			if(this.state.autosave) {
-				clearTimeout(this.state.autosave_timeout);
+			if(this.config.autosave) {
+				clearTimeout(this.config.autosave_timeout);
 				let _this = this;
-				this.state.autosave_timeout = setTimeout(function() {
+				this.config.autosave_timeout = setTimeout(function() {
 					if(_this.callAction('save') !== false) {
 						_this.callService('save');
 					}
@@ -204,29 +216,29 @@
 			let button_save = this.shadowRoot.querySelector("#button-save");
 			let disable_button = false;
 
-			if(this.state.max_length !== false) {
-				let maxCharactersInfoText = `${textLength}/${this.state.max_length} max.`;
+			if(this.config.max_length !== false) {
+				let maxCharactersInfoText = `${textLength}/${this.config.max_length} max.`;
 				let maxCharactersElem = this.shadowRoot.querySelector("#spanMaxCharactersInfoText")
 				maxCharactersElem.innerHTML = maxCharactersInfoText;
 
-				if(textLength >= this.state.max_length) {
+				if(textLength >= this.config.max_length) {
 					maxCharactersElem.classList.add("text-red");
 					disable_button = true;
 				}
 				else {
 					maxCharactersElem.classList.remove("text-red");
 				}
-				if(textLength <= this.state.max_length) {
+				if(textLength <= this.config.max_length) {
 					disable_button = false;
 				}
 			}
 
-			if(this.state.min_length > 0) {
-				let minCharactersInfoText = `${textLength}/${this.state.min_length} min.`;
+			if(this.config.min_length > 0) {
+				let minCharactersInfoText = `${textLength}/${this.config.min_length} min.`;
 				let minCharactersElem = this.shadowRoot.querySelector("#spanMinCharactersInfoText")
 				minCharactersElem.innerHTML = minCharactersInfoText;
 
-				if(textLength < this.state.min_length) {
+				if(textLength < this.config.min_length) {
 					minCharactersElem.classList.remove("hidden");
 					disable_button = true;
 				}
@@ -260,23 +272,23 @@
 		}
 
 		callAction(action) {
-			if (typeof this.state.actions[action] === 'function') {
-				return this.state.actions[action]();
+			if (typeof this.config.actions[action] === 'function') {
+				return this.config.actions[action]();
 			}
 		}
 
 		callService(service) {
-			if(this.state.entity_type === 'input_text' || this.state.entity_type === 'var') {
-				let value = (typeof this.state.service_values[service] === 'function' ? this.state.service_values[service]() : this.state.service_values[service]);
-				if(this.state.service[service]) {
+			if(this.config.entity_type === 'input_text' || this.config.entity_type === 'var') {
+				let value = (typeof this.config.service_values[service] === 'function' ? this.config.service_values[service]() : this.config.service_values[service]);
+				if(this.config.service[service]) {
 					let _this = this;
-					this._hass.callService(this.state.entity_type, this.state.service[service], {entity_id: this.stateObj.entity_id, value: value}).then(function(response) { _this.displayMessage(service, true) }, function(error) { _this.displayMessage(service, false) });
+					this._hass.callService(this.config.entity_type, this.config.service[service], {entity_id: this.stateObj.entity_id, value: value}).then(function(response) { _this.displayMessage(service, true) }, function(error) { _this.displayMessage(service, false) });
 				}
 			}
 		}
 
 		displayMessage(service, success) {
-			if(!this.state.show_success_messages || !this.shadowRoot || !service || service.length < 1) {
+			if(!this.config.show_success_messages || !this.shadowRoot || !service || service.length < 1) {
 				return;
 			}
 
@@ -319,13 +331,13 @@
 
 		actionSave() {
 			let len = this.getText().length;
-			let length_check = len >= this.state.min_length && (this.state.max_length === false || len <= this.state.max_length);
+			let length_check = len >= this.config.min_length && (this.config.max_length === false || len <= this.config.max_length);
 			return length_check;
 		}
 
 		actionClear() {
 			this.clearText();
-			if(this.state.save_on_clear && this.callAction('save') !== false) {
+			if(this.config.save_on_clear && this.callAction('save') !== false) {
 				this.callService('save');
 			}
 		}
@@ -385,7 +397,7 @@
 				throw new Error('Please define an entity of type: ' + supported_entity_types.join(', '));
 			}
 
-			this.state = {
+			this.config = {
 				autosave: config.autosave === true,
 				entity: config.entity,
 				max_length: parseInt(config.max_length) || false,
@@ -394,6 +406,7 @@
 				save_on_clear: config.save_on_clear === true,
 				show_success_messages: config.show_success_messages !== false,
 				title: config.title,
+				hideTitle: config.hide_title,
 
 				autosave_timeout: null,
 				default_text: "",
@@ -411,19 +424,19 @@
 			};
 
 			// filter out invalid values and buttons not to be displayed
-			let state_buttons = Object.fromEntries(Object.entries(this.state.buttons).filter(([key, value]) => value === true || (!isNaN(value) && value !== 0)));
+			let state_buttons = Object.fromEntries(Object.entries(this.config.buttons).filter(([key, value]) => value === true || (!isNaN(value) && value !== 0)));
 			// get ordered button keys
 			state_buttons = Object.keys(state_buttons).sort(function(a, b) { return state_buttons[a] - state_buttons[b]; });
 			// rebuild object with key => value
-			this.state.buttons_ordered = {};
-			state_buttons.forEach(key => this.state.buttons_ordered[key] = this.state.buttons[key]);
+			this.config.buttons_ordered = {};
+			state_buttons.forEach(key => this.config.buttons_ordered[key] = this.config.buttons[key]);
 
-			this.state.min_length = Math.max(this.state.min_length, 0);
+			this.config.min_length = Math.max(this.config.min_length, 0);
 
-			if(this.state.max_length !== false && this.state.max_length <= 0) {
+			if(this.config.max_length !== false && this.config.max_length <= 0) {
 				throw new Error("The max length should be greater than zero.");
 			}
-			if(this.state.min_length > this.state.max_length && this.state.max_length !== false) {
+			if(this.config.min_length > this.config.max_length && this.config.max_length !== false) {
 				throw new Error("The min length must not be greater than max length.");
 			}
 
@@ -436,23 +449,23 @@
 			if(hass && this._config) {
 				this.stateObj = this._config.entity in hass.states ? hass.states[this._config.entity] : null;
 				if(this.stateObj) {
-					if(this.state.title === undefined) {
-						this.state.title = this.stateObj.attributes.friendly_name || "";
+					if(this.config.title === undefined) {
+						this.config.title = this.stateObj.attributes.friendly_name || "";
 					}
-					if(this.state.entity_type === "input_text") {
+					if(this.config.entity_type === "input_text") {
 						if(this.stateObj.attributes.mode !== "text") {
 							throw new Error("An input_text entity must be in 'text' mode!");
 						}
 
-						if(this.state.min_length === 0 && (this.stateObj.attributes.min || 0) > 0) {
-							this.state.min_length = this.stateObj.attributes.min;
+						if(this.config.min_length === 0 && (this.stateObj.attributes.min || 0) > 0) {
+							this.config.min_length = this.stateObj.attributes.min;
 							console.warn("Entity " + this._config.entity + " requires at least " + this.stateObj.attributes.min + " characters.");
 						}
-						if(this.state.max_length === false || this.stateObj.attributes.max < this.state.max_length) {
-							if(this.state.max_length !== false) {
+						if(this.config.max_length === false || this.stateObj.attributes.max < this.config.max_length) {
+							if(this.config.max_length !== false) {
 								console.warn("Entity " + this._config.entity + " allows less characters (" + this.stateObj.attributes.max + ") than desired.");
 							}
-							this.state.max_length = this.stateObj.attributes.max;
+							this.config.max_length = this.stateObj.attributes.max;
 						}
 					}
 				}

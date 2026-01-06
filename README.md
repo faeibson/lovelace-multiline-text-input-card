@@ -45,6 +45,7 @@ resources:
 | type | string | **Required** | `custom:lovelace-multiline-text-input-card`
 | entity | string | **Required** | An `input_text` or `var` entity
 | autosave | bool | `false` | Save text automatically one second after input
+| hide_title | bool | `false` | Completely hide the title row
 | min_length | int | `0` | The minimum text length allowed to be saved to the entity (*)
 | max_length | int/bool | `false` | The maximum text length to be allowed (*)
 | placeholder_text | string | | Placeholder text to be displayed when empty
