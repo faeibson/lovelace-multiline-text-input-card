@@ -143,7 +143,7 @@
 
 		renderButton(key) {
 			return this.config.buttons[key]
-				? html`<div class="button" title="${this.config.hints[key]}" id="button-${key}" @tap="${() => { if(this.callAction(key) !== false) { this.callService(key); }}}"><ha-icon icon="${this.config.icons[key]}"></ha-icon></div>`
+				? html`<div class="button" title="${this.config.hints[key]}" id="button-${key}" @tap="${() => { if(this.callAction(key) !== false) { this.callService(key); }}}" @click="${() => { if(this.callAction(key) !== false) { this.callService(key); }}}"><ha-icon icon="${this.config.icons[key]}"></ha-icon></div>`
 				: null;
 		}
 
