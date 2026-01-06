@@ -12,14 +12,37 @@ Plus, I borrowed some code and inspiration from [benct's](https://github.com/ben
 ![license](https://img.shields.io/github/license/faeibson/lovelace-multiline-text-input-card?style=flat-square)
 [![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg?style=flat-square)](https://github.com/hacs/integration)
 
-![Screenshot](https://raw.githubusercontent.com/faeibson/lovelace-multiline-text-input-card/master/screenshot.png)
+![Screenshot](screenshot.jpg)
 
 *Default appearance with save, paste and clear buttons, and a max_length of 50.*
 
 
-![Screenshot](https://raw.githubusercontent.com/faeibson/lovelace-multiline-text-input-card/master/screenshot_minmax.png)
+![Screenshot](screenshot_minmax.jpg)
 
 *Appearance of the min_length behaviour. The save button is highlighted and disabled (as is the autosave function).*
+
+
+![Screenshot](screenshot_stretch.jpg)
+
+*If necessary, the card will stretch to fit the available space.*
+
+
+## Setup
+
+Download [lovelace-multiline-text-input-card.js](lovelace-multiline-text-input-card.js)
+to `/www/lovelace-multiline-text-input-card/` folder and add the following lines to the `resources` section in your `ui-lovelace.yaml` file:
+```yaml
+resources:
+  - url: /local/lovelace-multiline-text-input-card/lovelace-multiline-text-input-card.js
+    type: module
+```
+
+OR install using [HACS](https://hacs.xyz/) and add this instead:
+```yaml
+resources:
+  - url: /hacsfiles/lovelace-multiline-text-input-card/lovelace-multiline-text-input-card.js
+    type: module
+```
 
 ## Options
 
