@@ -10,18 +10,24 @@ Plus, I borrowed some code and inspiration from [benct's](https://github.com/ben
 ![license](https://img.shields.io/github/license/faeibson/lovelace-multiline-text-input-card?style=flat-square)
 [![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg?style=flat-square)](https://github.com/hacs/integration)
 
-![Screenshot](https://raw.githubusercontent.com/faeibson/lovelace-multiline-text-input-card/master/screenshot.png)
+![Screenshot](screenshot.jpg)
 
 *Default appearance with save, paste and clear buttons, and a max_length of 50.*
 
 
-![Screenshot](https://raw.githubusercontent.com/faeibson/lovelace-multiline-text-input-card/master/screenshot_minmax.png)
+![Screenshot](screenshot_minmax.jpg)
 
 *Appearance of the min_length behaviour. The save button is highlighted and disabled (as is the autosave function).*
 
+
+![Screenshot](screenshot_stretch.jpg)
+
+*If necessary, the card will stretch to fit the available space.*
+
+
 ## Setup
 
-Download [lovelace-multiline-text-input-card.js](https://raw.githubusercontent.com/faeibson/lovelace-multiline-text-input-card/master/lovelace-multiline-text-input-card.js)
+Download [lovelace-multiline-text-input-card.js](lovelace-multiline-text-input-card.js)
 to `/www/lovelace-multiline-text-input-card/` folder and add the following lines to the `resources` section in your `ui-lovelace.yaml` file:
 ```yaml
 resources:
@@ -44,11 +50,12 @@ resources:
 | entity | string | **Required** | An `input_text` or `var` entity
 | autosave | bool | `false` | Save text automatically one second after input
 | min_length | int | `0` | The minimum text length allowed to be saved to the entity (*)
+| min_lines_displayed | int | `2` | Determines the text field's minimal displayed height (lines/rows) even if it has less content
 | max_length | int/bool | `false` | The maximum text length to be allowed (*)
 | placeholder_text | string | | Placeholder text to be displayed when empty
 | save_on_clear | bool | `false` | Save empty text after pressing the clear button (no effect along with `min_length`)
 | show_success_messages | bool | `true` | Display message whether backend calls (e.g. saving) were successful or not
-| title | string | *friendly_name* | The card title (if undefined, falls back to the entity's `friendly_name` attribute)
+| title | string | *friendly_name* | The card title - if undefined, falls back to the entity's `friendly_name` attribute. If set to nothing / null (`"title: "` or `"title: null"`), the card header will not be displayed at all.
 | buttons | object/bool | *(see below)* | Set to `false` to hide button row
 | icons | object | *(see below)* | Set custom button icons (same keys as `buttons` object)
 
@@ -64,7 +71,7 @@ resources:
 
 You can now arrange buttons by giving them indices, beginning from the left. True/false still works as a value, keeping the default arrangement save / paste / clear.
 
-(*) Note: Clipboard paste does not work in all browsers!
+(*) Note: Clipboard paste does not work in all browsers and in most cases requires the user to grant permission first!
 
 ### Icons object
 
@@ -94,9 +101,10 @@ With the simplest configuration applied, min_length and max_length solely depend
   entity: input_text.input_text_entity
   max_length: 50
   min_length: 10
+  min_lines_displayed: 2
   placeholder_text: 'Text entered here is going to be saved automatically when between 10 and 50 characters length.'
   show_success_messages: false
-  title: Multiline text input card
+  title: 
   buttons:
     clear: 1
     paste: 2
@@ -105,4 +113,4 @@ With the simplest configuration applied, min_length and max_length solely depend
     clear: mdi:other-icon
 ```
 
-In this example, the min_length and max_length behaviour of the entity will be overwritten, if possible. That means, the allowed text length range can be narrowed down, but of course not increased. The card title is set manually and the save button will not be shown in favour of the enabled autosave function. The clear button will appear on the left with the paste button on the right. Last but not least, the icon of the clear button will be changed.
+In this example, the min_length and max_length behaviour of the entity will be overwritten, if possible. That means, the allowed text length range can be narrowed down, but of course not increased. The card title is set manually to nothing, i.e. will not be displayed, and the save button will not be shown in favour of the enabled autosave function. The clear button will appear on the left with the paste button on the right. Last but not least, the icon of the clear button will be changed, and the text field will always be displayed with two rows height (which is the default value anyway).
