@@ -1,4 +1,5 @@
 {
 	"name": "Multiline Text Input Card",
-	"render_readme": false
+	"content_in_root": true,
+	"filename": "lovelace-multiline-text-input-card.js"
 }
