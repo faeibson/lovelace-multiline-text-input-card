@@ -4,8 +4,8 @@ All notable changes to this project will be documented in this file.
 ## 1.0.6
 - (Big!) enhancement: **Possibility to store content as an `var` entity's attribute, which allows up to 16 KB (65535 characters) content!** (also the new default behaviour for `var` entities) ([#10], [#17])
 - Enhancement: Introduced `store_as`, `store_as_attribute_name` options to specify the storage target (`attribute` and/or `state`)
-- Enhancement: New option `autosave_delay_seconds` - Set the delay for the autosave trigger (in seconds)
-- Enhancement: New option `initial_value` - Set the initial value to be set if no value is set to the entity's state or attribute
+- Enhancement: New option `autosave_delay_seconds` defines the wait delay for the autosave trigger (in seconds)
+- Enhancement: New option `initial_value` defines the initial content if no value is set to the specified entity's state or attribute
 - Improved code, refactored a bit, some better error handling
 - The max length / char count will now always be displayed as it can't be be circumvented anyway
 

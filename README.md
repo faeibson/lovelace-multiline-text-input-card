@@ -2,7 +2,12 @@
 
 This is a simple lovelace card to display a multiline text input field bound on an `input_text` or snarky-snark's `var` [component](https://github.com/snarky-snark/home-assistant-variables/) entity.
 
-However, snarky-snark's `var` [component](https://github.com/snarky-snark/home-assistant-variables/) is recommended to use since Home Assistant's `input_text` is limited to a maximum of only 255 characters. At this point I will not forget to mention that this great component is capable of so much more - have a look at it!
+However, snarky-snark's `var` [component](https://github.com/snarky-snark/home-assistant-variables/) is recommended to use since Home Assistant limits entity states to a maximum of only 255 characters, while `var` allows us to use attributes with a **limit of 65535 characters (16 KB)** *each* instead. At this point I will not forget to mention that this great component is capable of so much more - have a look at it!
+
+As of version 1.0.6 you can not only store the content to the state of the specified entity, but also, if using the `var` component, to its attributes. Now it's possible to use **only one entity to store a lot of independent data** by defining multiple instances of the card each targetting different attributes of the same `var` entity (defined by `store_as_attribute_name`).
+Maybe you would like to have a short main container of the contents, you can still use the `state` even if you're using a `var` entity. Limited to 255 characters. Then you would like to have another two card instances, each allowing up to 16 KB data independently stored in different attributes. Have a look at the [example vertical-stack configuration](#example-vertical-stack-using-one-var-entity-for-multiple-cards)!
+
+
 
 Plus, I borrowed some code and inspiration from [benct's](https://github.com/benct) awesome [Xiaomi Vacuum Card](https://github.com/benct/lovelace-xiaomi-vacuum-card) - many thanks for that one, Ben!
 
@@ -32,6 +37,10 @@ Plus, I borrowed some code and inspiration from [benct's](https://github.com/ben
 *If necessary, the card will stretch to fit the available space, overriding the `min_lines_displayed` setting.*
 
 
+![Screenshot](screenshot_vertical_stack.jpg)
+
+*Multiple cards using the same `var` entity with different attribute names - check out the [example card](#example-vertical-stack-using-one-var-entity-for-multiple-cards)
+
 ## Setup
 
 Download [lovelace-multiline-text-input-card.js](lovelace-multiline-text-input-card.js)
@@ -59,16 +68,16 @@ resources:
 | autosave_delay_seconds | int | 1 | Wait `n` seconds after input to trigger the autosave
 | buttons | object/bool | [*(see below)*](#buttons-object) | Set to `false` to hide button row
 | icons | object | [*(see below)*](#icons-object) | Set custom button icons (same keys as `buttons` object)
-| initial_value | string | | Set the initial value to be set if no value is set to the entity's state or attribute
+| initial_value | string | | Defines the initial content if no value is set to the specified entity's state or attribute
 | max_length | int | `65535` | The maximum text length to be allowed (*)
 | min_length | int | `0` | The minimum text length required to be saved to the entity
 | min_lines_displayed | int | `2` | Determines the text field's minimal displayed height (lines/rows) even if it has less content
 | placeholder_text | string | | Placeholder text to be displayed when empty
 | save_on_clear | bool | `false` | Save empty text after pressing the clear button (no effect along with `min_length`)
 | show_success_messages | bool | `true` | Display message whether backend calls (e.g. saving) were successful or not
-| store_as | Array | `[ 'attribute' ]` for `var` entities<br>`[ 'state' ]` for `input_text`  | Choose between `attribute` or `state` or both to store the content.
-| store_as_attribute_name | string | `multiline_text_input` | If the card stores contents as entity attribute, specify the desired attribute name. This also means you can store to different attributes of the same entity by using multiple instances of the card, with different `store_as_attribute_name` values.
-| title | string | *friendly_name* | The card title - if undefined, falls back to the entity's `friendly_name` attribute. If set to nothing / null (`"title: "` or `"title: null"`), the card header will not be displayed at all.
+| store_as | Array | `[ 'attribute' ]` for `var` entities<br>`[ 'state' ]` for `input_text`  | Choose between `attribute` or `state` or both to store the content
+| store_as_attribute_name | string | `multiline_text_input` | If the card stores contents as entity attribute, specify the desired attribute name. This also means you can store to different attributes of the same entity by using multiple instances of the card, with different `store_as_attribute_name` values
+| title | string | *friendly_name* | The card title - if undefined, falls back to the entity's `friendly_name` attribute. If set to nothing / null (`"title: "` or `"title: null"`), the card header will not be displayed at all
 
 (*) Note: The maximum possible `max_length` depends on the configured `store_as` option, which itself depends on the specified `entity`. If you opt to use a `var` entity, the `store_as` will default to `attribute` which then sets max_length per default to its 65535 characters limit, whereas a standard `input_text` only allows to store contents as state, which then is also the only allowed option for `store_as`. If `store_as` contains the `state` option you will always have to deal with its 255 characters limit.
 
@@ -104,7 +113,6 @@ You can now arrange buttons by giving them indices, beginning from the left. Tru
 
 With the simplest configuration applied, content limits solely depend on the entity (max length of 255 characters for `input_text`, 65535 for `var`). Default appearance with three buttons for save, paste and clear and their respective icons. The card title will be the entity's *friendly_name* attribute. Autosave is turned off, as is the save-on-clear.
 
-
 ### Advanced configuration
 ```yaml
 - type: custom:lovelace-multiline-text-input-card
@@ -135,3 +143,29 @@ With the simplest configuration applied, content limits solely depend on the ent
 - The text field will always be displayed with a minimum of two lines height (which is the default value anyway).
 - The save button will not be shown in favour of the enabled autosave function, and the clear button will appear on the left with the paste button on the right.
 - Last but not least, the icon of the clear button will be changed to `mdi:other-icon`.
+
+### Example vertical stack using one `var` entity for multiple cards
+
+```yaml
+type: vertical-stack
+title: Shopping/Todo lists
+cards:
+  - autosave: true
+    entity: var.shopping_list
+    store_as:
+      - state
+    type: custom:lovelace-multiline-text-input-card
+    title: null
+  - autosave: true
+    entity: var.shopping_list
+    store_as_attribute_name: list_home
+    type: custom:lovelace-multiline-text-input-card
+    title: Groceries
+  - autosave: true
+    entity: var.shopping_list
+    store_as_attribute_name: list_vacation
+    type: custom:lovelace-multiline-text-input-card
+    title: Vacation
+```
+
+![Screenshot](screenshot_vertical_stack.jpg)
