@@ -57,8 +57,8 @@ resources:
 | entity | string | **Required** | An `input_text` or `var` entity
 | autosave | bool | `false` | Save changed content automatically after `autosave_delay_seconds`
 | autosave_delay_seconds | int | 1 | Wait `n` seconds after input to trigger the autosave
-| buttons | object/bool | *(see below)* | Set to `false` to hide button row
-| icons | object | *(see below)* | Set custom button icons (same keys as `buttons` object)
+| buttons | object/bool | [*(see below)*](#buttons-object) | Set to `false` to hide button row
+| icons | object | [*(see below)*](#icons-object) | Set custom button icons (same keys as `buttons` object)
 | initial_value | string | | Set the initial value to be set if no value is set to the entity's state or attribute
 | max_length | int | `65535` | The maximum text length to be allowed (*)
 | min_length | int | `0` | The minimum text length required to be saved to the entity
