@@ -13,18 +13,22 @@ Plus, I borrowed some code and inspiration from [benct's](https://github.com/ben
 [![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg?style=flat-square)](https://github.com/hacs/integration)
 
 ![Screenshot](screenshot.jpg)
+
 *Default appearance with save, paste and clear buttons, and a max_length of 50.*
 
 
 ![Screenshot](screenshot_store_as.jpg)
-*Two card instances, one is configured to write the text to the entity's state which has a limit of 255 characters, the other one saves the content as an entity attribute which enables you to store up to 65535 characters (16 KB).*
+
+*Two card instances, the upper one saves the content as an entity attribute which enables you to store up to 65535 characters (16 KB), whereas the lower card is configured to write the text to the entity's state which has a limit of 255 characters.*
 
 
 ![Screenshot](screenshot_minmax.jpg)
+
 *Appearance of the min_length behaviour. The save button is highlighted and disabled (as is the autosave function).*
 
 
 ![Screenshot](screenshot_stretch.jpg)
+
 *If necessary, the card will stretch to fit the available space, overriding the `min_lines_displayed` setting.*
 
 
@@ -62,7 +66,7 @@ resources:
 | placeholder_text | string | | Placeholder text to be displayed when empty
 | save_on_clear | bool | `false` | Save empty text after pressing the clear button (no effect along with `min_length`)
 | show_success_messages | bool | `true` | Display message whether backend calls (e.g. saving) were successful or not
-| store_as | Array | `[ 'attribute' ]` for `var` entities, `[ 'state' ]` for `input_text`  | Choose between `attribute` or `state` or both to store the content.
+| store_as | Array | `[ 'attribute' ]` for `var` entities<br>`[ 'state' ]` for `input_text`  | Choose between `attribute` or `state` or both to store the content.
 | store_as_attribute_name | string | `multiline_text_input` | If the card stores contents as entity attribute, specify the desired attribute name. This also means you can store to different attributes of the same entity by using multiple instances of the card, with different `store_as_attribute_name` values.
 | title | string | *friendly_name* | The card title - if undefined, falls back to the entity's `friendly_name` attribute. If set to nothing / null (`"title: "` or `"title: null"`), the card header will not be displayed at all.
 
@@ -98,7 +102,7 @@ You can now arrange buttons by giving them indices, beginning from the left. Tru
   entity: input_text.input_text_entity
 ```
 
-With the simplest configuration applied, min_length and max_length solely depend on the entity (255 for `input_text`, 65535 for `var`). Default appearance with three buttons for save, paste and clear and their respective icons. The card title will be the entity's *friendly_name* attribute. Autosave is turned off, as is the save-on-clear.
+With the simplest configuration applied, content limits solely depend on the entity (max length of 255 characters for `input_text`, 65535 for `var`). Default appearance with three buttons for save, paste and clear and their respective icons. The card title will be the entity's *friendly_name* attribute. Autosave is turned off, as is the save-on-clear.
 
 
 ### Advanced configuration
