@@ -39,7 +39,7 @@ Plus, I borrowed some code and inspiration from [benct's](https://github.com/ben
 
 ![Screenshot](screenshot_vertical_stack.jpg)
 
-*Multiple cards using the same `var` entity with different attribute names - check out the [example card](#example-vertical-stack-using-one-var-entity-for-multiple-cards)
+*Multiple cards using the same `var` entity with different attribute names - check out the [example card configuration](#example-vertical-stack-using-one-var-entity-for-multiple-cards)!*
 
 ## Setup
 
