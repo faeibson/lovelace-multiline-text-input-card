@@ -1,6 +1,6 @@
 # multiline-text-input-card
 
-This is a simple lovelace card to display a multiline text input field bound on an `input_text` or `var` entity.
+This is a simple lovelace card to display a multiline text input field bound on an `input_text` or snarky-snark's `var` [component](https://github.com/snarky-snark/home-assistant-variables/) entity.
 
 However, snarky-snark's `var` [component](https://github.com/snarky-snark/home-assistant-variables/) is recommended to use since Home Assistant's `input_text` is limited to a maximum of only 255 characters. At this point I will not forget to mention that this great component is capable of so much more - have a look at it!
 
