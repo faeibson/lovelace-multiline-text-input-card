@@ -1,6 +1,14 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## 1.0.6
+- (Big!) enhancement: **Possibility to store content as an `var` entity's attribute, which allows up to 16 KB (65535 characters) content!** (also the new default behaviour for `var` entities) ([#10], [#17])
+- Enhancement: Introduced `store_as`, `store_as_attribute_name` options to specify the storage target (`attribute` and/or `state`)
+- Enhancement: New option `autosave_delay_seconds` - Set the delay for the autosave trigger (in seconds)
+- Enhancement: New option `initial_value` - Set the initial value to be set if no value is set to the entity's state or attribute
+- Improved code, refactored a bit, some better error handling
+- The max length / char count will now always be displayed as it can't be be circumvented anyway
+
 ## 1.0.5
 - Smaller refactorings and improved code
 - Title / card header can now be hidden by just assigning an empty value / null ([#15])
@@ -35,9 +43,11 @@ All notable changes to this project will be documented in this file.
 [#3]: /../../issues/3
 [#6]: /../../issues/6
 [#9]: /../../issues/9
+[#10]: /../../issues/10
 [#13]: /../../issues/13
 [#14]: /../../issues/14
 [#15]: /../../issues/15
 [#16]: /../../issues/16
+[#17]: /../../issues/17
 [@adamhun94]: https://github.com/adamhun94
 [@ildar170975]: https://github.com/ildar170975

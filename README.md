@@ -13,18 +13,19 @@ Plus, I borrowed some code and inspiration from [benct's](https://github.com/ben
 [![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg?style=flat-square)](https://github.com/hacs/integration)
 
 ![Screenshot](screenshot.jpg)
-
 *Default appearance with save, paste and clear buttons, and a max_length of 50.*
 
 
-![Screenshot](screenshot_minmax.jpg)
+![Screenshot](screenshot_store_as.jpg)
+*Two card instances, one is configured to write the text to the entity's state which has a limit of 255 characters, the other one saves the content as an entity attribute which enables you to store up to 65535 characters (16 KB).*
 
+
+![Screenshot](screenshot_minmax.jpg)
 *Appearance of the min_length behaviour. The save button is highlighted and disabled (as is the autosave function).*
 
 
 ![Screenshot](screenshot_stretch.jpg)
-
-*If necessary, the card will stretch to fit the available space.*
+*If necessary, the card will stretch to fit the available space, overriding the `min_lines_displayed` setting.*
 
 
 ## Setup
@@ -50,18 +51,22 @@ resources:
 | ---- | ---- | ------- | -----------
 | type | string | **Required** | `custom:lovelace-multiline-text-input-card`
 | entity | string | **Required** | An `input_text` or `var` entity
-| autosave | bool | `false` | Save text automatically one second after input
-| min_length | int | `0` | The minimum text length allowed to be saved to the entity (*)
+| autosave | bool | `false` | Save changed content automatically after `autosave_delay_seconds`
+| autosave_delay_seconds | int | 1 | Wait `n` seconds after input to trigger the autosave
+| buttons | object/bool | *(see below)* | Set to `false` to hide button row
+| icons | object | *(see below)* | Set custom button icons (same keys as `buttons` object)
+| initial_value | string | | Set the initial value to be set if no value is set to the entity's state or attribute
+| max_length | int | `65535` | The maximum text length to be allowed (*)
+| min_length | int | `0` | The minimum text length required to be saved to the entity
 | min_lines_displayed | int | `2` | Determines the text field's minimal displayed height (lines/rows) even if it has less content
-| max_length | int/bool | `false` | The maximum text length to be allowed (*)
 | placeholder_text | string | | Placeholder text to be displayed when empty
 | save_on_clear | bool | `false` | Save empty text after pressing the clear button (no effect along with `min_length`)
 | show_success_messages | bool | `true` | Display message whether backend calls (e.g. saving) were successful or not
+| store_as | Array | `[ 'attribute' ]` for `var` entities, `[ 'state' ]` for `input_text`  | Choose between `attribute` or `state` or both to store the content.
+| store_as_attribute_name | string | `multiline_text_input` | If the card stores contents as entity attribute, specify the desired attribute name. This also means you can store to different attributes of the same entity by using multiple instances of the card, with different `store_as_attribute_name` values.
 | title | string | *friendly_name* | The card title - if undefined, falls back to the entity's `friendly_name` attribute. If set to nothing / null (`"title: "` or `"title: null"`), the card header will not be displayed at all.
-| buttons | object/bool | *(see below)* | Set to `false` to hide button row
-| icons | object | *(see below)* | Set custom button icons (same keys as `buttons` object)
 
-(*) Note: If necessary, the entity's min/max length attributes will be taken into account and overwrite the config.
+(*) Note: The maximum possible `max_length` depends on the configured `store_as` option, which itself depends on the specified `entity`. If you opt to use a `var` entity, the `store_as` will default to `attribute` which then sets max_length per default to its 65535 characters limit, whereas a standard `input_text` only allows to store contents as state, which then is also the only allowed option for `store_as`. If `store_as` contains the `state` option you will always have to deal with its 255 characters limit.
 
 ### Buttons object
 
@@ -85,7 +90,7 @@ You can now arrange buttons by giving them indices, beginning from the left. Tru
 
 ## Examples
 
-Don't forget to add your `input_text` or `var` entity in your `configuration.yaml`! ;)
+**Don't forget to define your `input_text` or `var` entity in your `configuration.yaml` first! ;)**
 
 ### Simple config example
 ```yaml
@@ -93,19 +98,22 @@ Don't forget to add your `input_text` or `var` entity in your `configuration.yam
   entity: input_text.input_text_entity
 ```
 
-With the simplest configuration applied, min_length and max_length solely depend on the entity. Default appearance with three buttons for save, paste and clear and their respective icons. The card title will be the entity's *friendly_name* attribute. Autosave is turned off, as is the save-on-clear.
+With the simplest configuration applied, min_length and max_length solely depend on the entity (255 for `input_text`, 65535 for `var`). Default appearance with three buttons for save, paste and clear and their respective icons. The card title will be the entity's *friendly_name* attribute. Autosave is turned off, as is the save-on-clear.
 
 
 ### Advanced configuration
 ```yaml
 - type: custom:lovelace-multiline-text-input-card
   autosave: true
-  entity: input_text.input_text_entity
-  max_length: 50
+  entity: var.notes
+  max_length: 50000
   min_length: 10
   min_lines_displayed: 2
-  placeholder_text: 'Text entered here is going to be saved automatically when between 10 and 50 characters length.'
+  placeholder_text: 'Text entered here is going to be saved automatically when between 10 and 50000 characters length.'
   show_success_messages: false
+  store_as:
+    - attribute
+  store_as_attribute_name: notes_1
   title: 
   buttons:
     clear: 1
@@ -115,4 +123,11 @@ With the simplest configuration applied, min_length and max_length solely depend
     clear: mdi:other-icon
 ```
 
-In this example, the min_length and max_length behaviour of the entity will be overwritten, if possible. That means, the allowed text length range can be narrowed down, but of course not increased. The card title is set manually to nothing, i.e. will not be displayed, and the save button will not be shown in favour of the enabled autosave function. The clear button will appear on the left with the paste button on the right. Last but not least, the icon of the clear button will be changed, and the text field will always be displayed with two rows height (which is the default value anyway).
+- the card's target entity is `var.notes` which enables us to store content as an attribute, allowing up to 16 KB (65535 characters).
+- note that `store_as` is only included in this example for clarity, as for `var` entities it will default to `attribute` anyway. You can also add `state`, so that the content will be stored to both attribute as well as state, but this will result in a maximum of 255 characters content.
+- the target attribute name is `notes_1` which can later be altered, or in another instance of the card be a different attribute. Note that each individual attribute allows up to 16 KB (65535 characters) content.
+- the `min_length` and `max_length` behaviour of the entity will be overwritten. That means, the allowed text length range can be narrowed down, but of course not increased.
+- The card title is set manually to nothing, i.e. will not be displayed.
+- The text field will always be displayed with a minimum of two lines height (which is the default value anyway).
+- The save button will not be shown in favour of the enabled autosave function, and the clear button will appear on the left with the paste button on the right.
+- Last but not least, the icon of the clear button will be changed to `mdi:other-icon`.

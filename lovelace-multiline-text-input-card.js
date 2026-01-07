@@ -1,17 +1,23 @@
 ((LitElement) => {
 	const html = LitElement.prototype.html;
 	const css = LitElement.prototype.css;
-	const version = "1.0.5";
+	const version = '1.0.6';
+
+	const SUPPORTED_ENTITY_DOMAINS = [
+		'input_text',
+		'var', 		// custom component: https://github.com/snarky-snark/home-assistant-variables/
+	];
+	const HA_ATTRIBUTE_MAX_LENGTH = 65535;
+	const HA_STATE_MAX_LENGTH = 255;
 
 	class LovelaceMultilineTextInput extends LitElement {
 
 		static get properties() {
 			return {
 				_hass: {},
-				_config: {},
 				stateObj: {},
-				config: {}
-			}
+				config: {},
+			};
 		}
 
 		static get styles() {
@@ -123,19 +129,18 @@
 		}
 
 		updated() {
-			let _this = this;
 			this.updateComplete.then(() => {
-				let new_state = _this.getState();
+				const new_state = this.getState();
 				// only overwrite if state has changed since last overwrite
-				if (_this.config.last_updated_text === null || new_state !== _this.config.last_updated_text) {
-					_this.setText(new_state, true);
+				if (this.config.last_updated_text === null || new_state !== this.config.last_updated_text) {
+					this.setText(new_state, true);
 				}
 			});
 		}
 
 		render() {
 			return this.stateObj ? html`
-				<ha-card .hass="${this._hass}" .config="${this._config}" class="h-full flex-col">
+				<ha-card .hass="${this._hass}" .config="${this.config}" class="h-full flex-col">
 					${this.config.title?.length ? html`<div class="card-header">${this.config.title}</div>` : ''}
 			  		<div class="card-content flex-col flex-1">
 						<textarea maxlength="${this.config.max_length !== -1 ? this.config.max_length : ""}" @propertychange="${() => this.onTextareaChanged()}" @input="${() => this.onTextareaChanged()}" class="textarea" placeholder="${this.config.placeholder_text}">${this.getState()}</textarea>
@@ -164,12 +169,15 @@
 		}
 
 		getState() {
-			const value = this.stateObj ? this.stateObj.state : this.config.default_text;
-			return value.replace("\\n", "\n");
+			let value = String(this.stateObj ? this.stateObj.state : this.config.initial_value);
+			if(this.config.store_as.includes('attribute') && this.config.store_as_attribute_name?.length) {
+				value = this.stateObj.attributes[this.config.store_as_attribute_name] || this.config.initial_value;
+			}
+			return String(value);
 		}
 
 		getText() {
-			return this.shadowRoot ? this.shadowRoot.querySelector(".textarea").value : "";
+			return this.shadowRoot ? this.shadowRoot.querySelector('.textarea')?.value : '';
 		}
 
 		setText(val, entity_update = false) {
@@ -177,7 +185,7 @@
 				return false;
 			}
 
-			this.shadowRoot.querySelector(".textarea").value = val;
+			this.shadowRoot.querySelector('.textarea').value = val;
 
 			if (entity_update === true) {
 				this.config.last_updated_text = val;
@@ -190,24 +198,21 @@
 		}
 
 		clearText() {
-			clearTimeout(this.config.autosave_timeout);
+			clearTimeout(this.timeouts['autosave']);
 			this.setText('');
 		}
 
 		pasteText() {
-			clearTimeout(this.config.autosave_timeout);
-			if (!this.shadowRoot) {
-				return false;
-			}
+			clearTimeout(this.timeouts.autosave);
 
-			let elem = this.shadowRoot.querySelector(".textarea");
+			const elem = this.shadowRoot.querySelector('.textarea');
 			if (!elem) {
 				return;
 			}
 			elem.focus();
 
 			if(!navigator.clipboard) {
-				console.warn("Sorry, your browser does not support the clipboard API.");
+				console.warn('Sorry, your browser does not support the clipboard API.');
 				return;
 			}
 
@@ -218,75 +223,69 @@
 							this.setText((elem.value ?? '') + text);
 						})
 						.catch((err) => {
-							console.error("Error on paste: ", err);
+							console.error('Error on paste: ', err);
 						});
 				} else {
-					console.warn('Clipboard read permission denied');
+					console.warn('Clipboard read permission denied!');
 				}
 			});
 		}
 
 		onTextareaChanged() {
 			if (this.config.autosave) {
-				clearTimeout(this.config.autosave_timeout);
-				let _this = this;
-				this.config.autosave_timeout = setTimeout(function () {
-					if (_this.callAction('save') !== false) {
-						_this.callService('save');
+				clearTimeout(this.timeouts.autosave);
+				this.timeouts.autosave = setTimeout(() => {
+					if (this.callAction('save') !== false) {
+						this.callService('save');
 					}
-				}, 1000);
+				}, this.config.autosave_delay);
 			}
 			this.updateCharactersInfoText();
 			this.resizeTextarea();
 		}
 
 		updateCharactersInfoText() {
-			if (!this.shadowRoot) {
-				return false;
+			const textLength = this.shadowRoot.querySelector('.textarea').value.length;
+			const button_save = this.shadowRoot.querySelector('#button-save');
+			const disable_button = false;
+
+			const maxCharactersInfoText = `${textLength}/${this.config.max_length} max.`;
+			const maxCharactersElem = this.shadowRoot.querySelector('#spanMaxCharactersInfoText');
+			maxCharactersElem.innerHTML = maxCharactersInfoText;
+
+			if (textLength >= this.config.max_length) {
+				maxCharactersElem.classList.add('text-red');
+				disable_button = true;
 			}
-			let textLength = this.shadowRoot.querySelector(".textarea").value.length;
-			let button_save = this.shadowRoot.querySelector("#button-save");
-			let disable_button = false;
-
-			if (this.config.max_length !== false) {
-				let maxCharactersInfoText = `${textLength}/${this.config.max_length} max.`;
-				let maxCharactersElem = this.shadowRoot.querySelector("#spanMaxCharactersInfoText")
-				maxCharactersElem.innerHTML = maxCharactersInfoText;
-
-				if (textLength >= this.config.max_length) {
-					maxCharactersElem.classList.add("text-red");
-					disable_button = true;
-				}
-				else {
-					maxCharactersElem.classList.remove("text-red");
-				}
-				if (textLength <= this.config.max_length) {
-					disable_button = false;
-				}
+			else {
+				maxCharactersElem.classList.remove('text-red');
+			}
+			if (textLength <= this.config.max_length) {
+				disable_button = false;
 			}
 
 			if (this.config.min_length > 0) {
-				let minCharactersInfoText = `${textLength}/${this.config.min_length} min.`;
-				let minCharactersElem = this.shadowRoot.querySelector("#spanMinCharactersInfoText")
+				const minCharactersInfoText = `${textLength}/${this.config.min_length} min.`;
+				const minCharactersElem = this.shadowRoot.querySelector('#spanMinCharactersInfoText');
 				minCharactersElem.innerHTML = minCharactersInfoText;
 
 				if (textLength < this.config.min_length) {
-					minCharactersElem.classList.remove("invisible");
+					minCharactersElem.classList.remove('invisible');
 					disable_button = true;
 				}
 				else {
-					minCharactersElem.classList.add("invisible");
+					minCharactersElem.classList.add('invisible');
 				}
 			}
 
 			if (button_save) {
 				if (disable_button) {
-					button_save.classList.add("button-disabled");
-					button_save.classList.add("text-red");
+					button_save.classList.add('button-disabled');
+					button_save.classList.add('text-red');
 				}
 				else {
-					button_save.classList.remove("button-disabled");
-					button_save.classList.remove("text-red");
+					button_save.classList.remove('button-disabled');
+					button_save.classList.remove('text-red');
 				}
 			}
 		}
@@ -304,7 +303,7 @@
 			const paddingTop = parseFloat(textAreaComputedStyle.paddingTop);
 			const paddingBottom = parseFloat(textAreaComputedStyle.paddingBottom);
 			const newMinHeight = lineHeight * this.config.min_lines_displayed + borderTopWidth + borderBottomWidth + paddingTop + paddingBottom;
-			textArea.style.minHeight = newMinHeight + "px";
+			textArea.style.minHeight = newMinHeight + 'px';
 		}
 
 		callAction(action) {
@@ -314,11 +313,28 @@
 		}
 
 		callService(service) {
-			if (this.config.entity_type === 'input_text' || this.config.entity_type === 'var') {
-				let value = (typeof this.config.service_values[service] === 'function' ? this.config.service_values[service]() : this.config.service_values[service]);
+			if (this.config.entity_domain === 'input_text' || this.config.entity_domain === 'var') {
+				const value = String((typeof this.config.service_values[service] === 'function' ? this.config.service_values[service]() : this.config.service_values[service]));
 				if (this.config.service[service]) {
-					let _this = this;
-					this._hass.callService(this.config.entity_type, this.config.service[service], { entity_id: this.stateObj.entity_id, value: value }).then(function (response) { _this.displayMessage(service, true) }, function (error) { _this.displayMessage(service, false) });
+					const saveToStatePromise = () => {
+						return this._hass.callService(this.config.entity_domain, this.config.service[service], { entity_id: this.stateObj.entity_id, value });
+					};
+					const saveToAttributePromise = () => {
+						const setAttributes = {};
+						setAttributes[this.config.store_as_attribute_name] = value;
+
+						return this._hass.callService(this.config.entity_domain, this.config.service[service], { entity_id: this.stateObj.entity_id, attributes: setAttributes });
+					};
+					
+					Promise.resolve()
+						.then(this.config.store_as.includes('state') && saveToStatePromise)
+						.then(this.config.store_as.includes('attribute') && this.config.entity_domain === 'var' && saveToAttributePromise)
+						.then(() => {
+							this.displayMessage(service, true);
+						})
+						.catch((error) => {
+							this.displayMessage(service, false);
+						});
 				}
 			}
 		}
@@ -328,47 +344,37 @@
 				return;
 			}
 
-			let serviceMessageContainer = this.shadowRoot.querySelector('#serviceMessage');
-
+			const serviceMessageContainer = this.shadowRoot.querySelector('#serviceMessage');
 			if (!serviceMessageContainer) {
 				return;
 			}
 
-			// todo: translations
-			let message = "";
-			if (success) {
-				if (service == "save") {
-					message = "The content has been saved.";
-				}
-			}
-			else {
-				if (service == "save") {
-					message = "An error occurred in the backend while saving!";
-				}
+			let message = '';
+			if (service === 'save') {
+				message = success ? 'Content saved.' : 'An error occurred in the backend while saving!';
 			}
 
-			if (message.length > 0) {
+			if (message.length) {
 				serviceMessageContainer.innerHTML = message;
-				serviceMessageContainer.classList.remove("invisible");
-				serviceMessageContainer.classList.remove("opacity-0");
-				let buttons = this.shadowRoot.querySelectorAll(".button");
-				buttons.forEach(elem => elem.classList.add("opacity-0"));
+				serviceMessageContainer.classList.remove('invisible');
+				serviceMessageContainer.classList.remove('opacity-0');
+				const buttons = this.shadowRoot.querySelectorAll('.button');
+				buttons.forEach(elem => elem.classList.add('opacity-0'));
 
 				setTimeout(function () {
-					serviceMessageContainer.classList.add("opacity-0");
-					buttons.forEach(elem => elem.classList.remove("opacity-0"));
+					serviceMessageContainer.classList.add('opacity-0');
+					buttons.forEach(elem => elem.classList.remove('opacity-0'));
 				}, 1500);
 				setTimeout(function () {
-					serviceMessageContainer.classList.add("invisible");
-					serviceMessageContainer.innerHTML = "&nbsp;";
+					serviceMessageContainer.classList.add('invisible');
+					serviceMessageContainer.innerHTML = '&nbsp;';
 				}, 2000);
 			}
 		}
 
 		actionSave() {
-			let len = this.getText().length;
-			let length_check = len >= this.config.min_length && (this.config.max_length === false || len <= this.config.max_length);
-			return length_check;
+			const len = this.getText().length;
+			return len >= this.config.min_length && (this.config.max_length === false || len <= this.config.max_length);
 		}
 
 		actionClear() {
@@ -383,18 +389,13 @@
 		}
 
 		setConfig(config) {
-			const supported_entity_types = [
-				'input_text',
-				'var', 		// custom component: https://community.home-assistant.io/t/custom-component-generic-variable-entities/128627
-			];
-
 			const actions = {
 				save: () => { return this.actionSave(); },
 				paste: () => { return this.actionPaste(); },
 				clear: () => { return this.actionClear(); },
 			};
 
-			// paste has no service, clear must be "confirmed" by saving
+			// paste has no service, clear will be persisted by saving
 			const services = {
 				'input_text': {
 					save: 'set_value',
@@ -404,7 +405,7 @@
 				},
 			};
 
-			const service_values = {
+			const serviceValues = {
 				save: () => { return this.getText(); },
 				paste: null,
 				clear: '',
@@ -428,25 +429,41 @@
 				clear: 'Clear text'
 			};
 
-			let entity_type = config.entity.split('.')[0];
-			if (!config.entity || !supported_entity_types.includes(entity_type)) {
-				throw new Error('Please define an entity of type: ' + supported_entity_types.join(', '));
+			const entityDomain = config.entity?.split('.')[0];
+			if (!config.entity || !SUPPORTED_ENTITY_DOMAINS.includes(entityDomain)) {
+				throw new Error('Please define an entity of type: ' + SUPPORTED_ENTITY_DOMAINS.join(', '));
 			}
+
+			const storeAsConfig = config.store_as || [ entityDomain === 'input_text' ? 'state' : 'attribute' ];
+
+			if(entityDomain === 'input_text' && storeAsConfig.includes('attribute')) {
+				throw new Error(`Domain ${entityDomain} cannot store as attribute. Please use an entity of the var component to achieve this.`);
+			}
+			const storeAsState = storeAsConfig.includes('state');
+			const storeMaxLength = storeAsState ? HA_STATE_MAX_LENGTH : HA_ATTRIBUTE_MAX_LENGTH;
+			const maxLengthConfig = parseInt(config.max_length) || storeMaxLength;
+			if(maxLengthConfig > storeMaxLength) {
+				throw new Error(`max_length ${maxLengthConfig} exceeds the limit (${storeMaxLength}) of the current store_as configuration (${storeAsConfig.join(', ')})`);
+			}
+
+			const autosaveDelay = parseInt(config.autosave_delay_seconds);
 
 			this.config = {
 				autosave: config.autosave === true,
 				entity: config.entity,
-				max_length: parseInt(config.max_length) || false,
+				max_length: maxLengthConfig,
 				min_length: parseInt(config.min_length) || 0,
 				min_lines_displayed: parseInt(config.min_lines_displayed ?? 2),
-				placeholder_text: config.placeholder_text ?? "",
+				placeholder_text: config.placeholder_text || '',
+				store_as: storeAsConfig,
+				store_as_attribute_name: config.store_as_attribute_name || 'multiline_text_input',
 				save_on_clear: config.save_on_clear === true,
 				show_success_messages: config.show_success_messages !== false,
 				title: config.title,
 
-				autosave_timeout: null,
-				default_text: "",
-				entity_type: entity_type,
+				autosave_delay: (isNaN(autosaveDelay) ? 1 : autosaveDelay) * 1000,
+				initial_value: config.initial_value || '',
+				entity_domain: entityDomain,
 				last_updated_text: null,
 				showButtons: config.buttons !== false,
 
@@ -455,55 +472,54 @@
 				buttons_ordered: {},
 				hints: Object.assign({}, hints),
 				icons: Object.assign({}, icons, config.icons),
-				service: Object.assign({}, services[entity_type]),
-				service_values: Object.assign({}, service_values),
+				service: Object.assign({}, services[entityDomain]),
+				service_values: Object.assign({}, serviceValues),
 			};
 
 			// filter out invalid values and buttons not to be displayed
-			let state_buttons = Object.fromEntries(Object.entries(this.config.buttons).filter(([key, value]) => value === true || (!isNaN(value) && value !== 0)));
+			let stateButtons = Object.fromEntries(Object.entries(this.config.buttons).filter(([key, value]) => value === true || (!isNaN(value) && value !== 0)));
 			// get ordered button keys
-			state_buttons = Object.keys(state_buttons).sort(function (a, b) { return state_buttons[a] - state_buttons[b]; });
+			stateButtons = Object.keys(stateButtons).sort(function (a, b) { return stateButtons[a] - stateButtons[b]; });
 			// rebuild object with key => value
-			this.config.buttons_ordered = {};
-			state_buttons.forEach(key => this.config.buttons_ordered[key] = this.config.buttons[key]);
+			stateButtons.forEach(key => this.config.buttons_ordered[key] = this.config.buttons[key]);
 
 			this.config.min_length = Math.max(this.config.min_length, 0);
 
-			if (this.config.max_length !== false && this.config.max_length <= 0) {
-				throw new Error("The max length should be greater than zero.");
+			if (this.config.max_length <= 0) {
+				throw new Error('The max length should be greater than zero.');
 			}
-			if (this.config.min_length > this.config.max_length && this.config.max_length !== false) {
-				throw new Error("The min length must not be greater than max length.");
+			if (this.config.min_length > this.config.max_length) {
+				throw new Error('The min length must not be greater than max length.');
 			}
-
-			this._config = config;
+			if (this.config.min_lines_displayed < 1) {
+				throw new Error('At least one line must be displayed.');
+			}
+			if (this.config.autosave_delay < 0) {
+				throw new Error('autosave_delay_seconds must be set to zero or a positive number (defaults to 1).');
+			}
+			
+			this.timeouts = {
+				autosave: null
+			};
 		}
 
 		set hass(hass) {
 			this._hass = hass;
 
-			if (hass && this._config) {
-				this.stateObj = this._config.entity in hass.states ? hass.states[this._config.entity] : null;
+			if (hass && this.config) {
+				this.stateObj = this.config.entity in hass.states ? hass.states[this.config.entity] : null;
 				if (this.stateObj) {
 					if (this.config.title === undefined) {
-						this.config.title = this.stateObj.attributes.friendly_name || "";
+						this.config.title = this.stateObj.attributes.friendly_name || '';
 					}
-					if (this.config.entity_type === "input_text") {
-						if (this.stateObj.attributes.mode !== "text") {
-							throw new Error("An input_text entity must be in 'text' mode!");
-						}
-
-						if (this.config.min_length === 0 && (this.stateObj.attributes.min || 0) > 0) {
-							this.config.min_length = this.stateObj.attributes.min;
-							console.warn("Entity " + this._config.entity + " requires at least " + this.stateObj.attributes.min + " characters.");
-						}
-						if (this.config.max_length === false || this.stateObj.attributes.max < this.config.max_length) {
-							if (this.config.max_length !== false) {
-								console.warn("Entity " + this._config.entity + " allows less characters (" + this.stateObj.attributes.max + ") than desired.");
-							}
-							this.config.max_length = this.stateObj.attributes.max;
+					if (this.config.entity_domain === 'input_text') {
+						if (this.stateObj.attributes.mode !== 'text') {
+							throw new Error(`The input_text entity must be in 'text' mode (is: ${this.stateObj.attributes.mode})!`);
 						}
 					}
+				}
+				else {
+					throw new Error(`Entity ${this.config.entity} does not exist!`);
 				}
 			}
 		}
@@ -517,4 +533,4 @@
 			'color: white; font-weight: bold; background: dimgray',
 		);
 	}
-})(window.LitElement || Object.getPrototypeOf(customElements.get("hui-masonry-view") || customElements.get("hui-view")));
+})(window.LitElement || Object.getPrototypeOf(customElements.get('hui-masonry-view') || customElements.get('hui-view')));
