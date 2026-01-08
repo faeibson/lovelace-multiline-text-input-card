@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## 1.0.7
+- Fixed: Setting `show_buttons` to `false` resulted in an error
+- Renamed the `show_success_messages` option to `display_action_results` (old name will still work)
+- Enhancement: Setting `display_action_results: true` (which is default) will not result in any additional height anymore. Improved display and styling of the card. Reduced padding of the action buttons to require less space.
+
 ## 1.0.6
 - (Big!) enhancement: **Possibility to store content as an `var` entity's attribute, which allows up to 16 KB (65535 characters) content!** (also the new default behaviour for `var` entities) ([#10], [#17])
 - Enhancement: Introduced `store_as`, `store_as_attribute_name` options to specify the storage target (`attribute` and/or `state`)

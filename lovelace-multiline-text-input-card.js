@@ -1,7 +1,7 @@
 ((LitElement) => {
 	const html = LitElement.prototype.html;
 	const css = LitElement.prototype.css;
-	const version = '1.0.6';
+	const version = '1.0.7';
 
 	const SUPPORTED_ENTITY_DOMAINS = [
 		'input_text',
@@ -22,10 +22,20 @@
 
 		static get styles() {
 			return css`
+				.action-result-message-container {
+					background-color: var(--primary-background-color);
+					border: 1px solid var(--primary-color);
+					border-radius: 3px;
+					bottom: 10px;
+					opacity: 1;
+					padding: 5px;
+					position: absolute;
+					transition: opacity 0.5s linear;
+				}
 				.button {
 					cursor: pointer;
-					padding: 16px;
 					opacity: 1;
+					padding: 5px 0;
 					transition: opacity 0.5s linear;
 				}
 				.button-disabled {
@@ -36,8 +46,8 @@
 					flex: 1;
 				}
 				.flex-center {
-					display: flex;
 					align-items: center;
+					display: flex;
 					justify-content: space-evenly;
 				}
 				.flex-col {
@@ -56,14 +66,14 @@
 					display: flex;
 					flex-direction: row;
 				}
-				.hidden {
-					display: none;
-				}
 				.h-full {
 					height: 100%;
 				}
 				.invisible {
 					visibility: hidden;
+				}
+				.opacity-0 {
+					opacity: 0 !important;
 				}
 				.space-between {
 					justify-content: space-between;
@@ -74,21 +84,18 @@
 					border-left: 1px solid var(--primary-color);
 					border-bottom: 1px solid var(--primary-color);
 					box-shadow: none;
-					color: inherit; /*var(--primary-color)*/;
+					color: inherit;
+					field-sizing: content;
 					font: inherit;
 					font-size: 16px;
-					height: 100%;
-					field-sizing: content;
 					letter-spacing: inherit;
 					line-height: inherit;
-					outline: none;
-					padding-left: 5px;
-					padding-bottom: 5px;
-					word-wrap: break-word;
-					width: 100%;
-					word-spacing: inherit;
 					max-width: 100%;
 					min-width: 100%;
+					outline: none;
+					padding: 0 5px;
+					word-spacing: inherit;
+					word-wrap: break-word;
 				}
 				.text-bold {
 					font-weight: bold;
@@ -105,22 +112,8 @@
 				.text-small {
 					font-size: 11px;
 				}
-				.opacity-0 {
-					opacity: 0 !important;
-				}
-				.position-absolute {
-					position: absolute;
-				}
 				.w-full {
 					width: 100%;
-				}
-				#serviceMessage {
-					padding: 5px;
-					background-color: var(--primary-background-color);
-					border: 1px solid var(--primary-color);
-					border-radius: 3px;
-					opacity: 1;
-					transition: opacity 0.5s linear;
 				}
 				ha-card, ha-card * {
 					box-sizing: border-box;
@@ -139,23 +132,34 @@
 		}
 
 		render() {
-			return this.stateObj ? html`
-				<ha-card .hass="${this._hass}" .config="${this.config}" class="h-full flex-col">
-					${this.config.title?.length ? html`<div class="card-header">${this.config.title}</div>` : ''}
-			  		<div class="card-content flex-col flex-1">
-						<textarea maxlength="${this.config.max_length !== -1 ? this.config.max_length : ""}" @propertychange="${() => this.onTextareaChanged()}" @input="${() => this.onTextareaChanged()}" class="textarea" placeholder="${this.config.placeholder_text}">${this.getState()}</textarea>
-						<div class="card-text-constraints flex-row flex-1 space-between">
-							<span class="text-red text-small text-italic" id="spanMinCharactersInfoText"></span>
-							<span class="text-small text-italic" id="spanMaxCharactersInfoText"></span>
-						</div>
-						${!this.config.showButtons ? html`<div id="serviceMessage" class="text-center text-small invisible opacity-0">&nbsp;</div>` : null}
-						${this.config.showButtons ? html`
+			return this.stateObj ?
+				html`
+					<ha-card .hass="${this._hass}" .config="${this.config}" class="h-full flex-col">
+						${this.config.title?.length ?
+							html`<div class="card-header">${this.config.title}</div>`
+							: ''
+						}
+						<div class="card-content flex-col flex-1">
+							<textarea
+								class="textarea h-full w-full"
+								maxlength="${this.config.max_length !== -1 ? this.config.max_length : ''}"
+								placeholder="${this.config.placeholder_text}"
+								@propertychange="${() => this.onTextareaChanged()}"
+								@input="${() => this.onTextareaChanged()}"
+							>
+								${this.getState()}
+							</textarea>
+							<div class="card-text-constraints flex-row flex-1 space-between">
+								<span class="text-red text-small text-italic info-characters-min"></span>
+								<span class="text-small text-italic info-characters-max"></span>
+							</div>
 							<div class="card-buttons flex-center w-full">
-								<div id="serviceMessage" class="position-absolute text-small invisible opacity-0">&nbsp;</div>
-								${Object.keys(this.config.buttons_ordered).map(this.renderButton.bind(this))}
-							</div>` : null}
-			  		</div>
-				</ha-card>` : null;
+								<div class="action-result-message-container text-small opacity-0 invisible"></div>
+								${this.config.show_buttons ? Object.keys(this.config.buttons_ordered).map(this.renderButton.bind(this)) : null}
+							</div>
+						</div>
+					</ha-card>`
+					: null;
 		}
 
 		getCardSize() {
@@ -163,9 +167,16 @@
 		}
 
 		renderButton(key) {
-			return this.config.buttons[key]
-				? html`<div class="button" title="${this.config.hints[key]}" id="button-${key}" @tap="${() => { if (this.callAction(key) !== false) { this.callService(key); } }}" @click="${() => { if (this.callAction(key) !== false) { this.callService(key); } }}"><ha-icon icon="${this.config.icons[key]}"></ha-icon></div>`
-				: null;
+			return this.config.buttons[key] ?
+				html`<div
+						class="button button-${key}"
+						title="${this.config.hints[key]}"
+						@click="${() => { if (this.callAction(key) !== false) { this.callService(key); } }}"
+						@tap="${() => { if (this.callAction(key) !== false) { this.callService(key); } }}"
+					>
+						<ha-icon icon="${this.config.icons[key]}"></ha-icon>
+					</div>`
+					: null;
 		}
 
 		getState() {
@@ -246,46 +257,46 @@
 
 		updateCharactersInfoText() {
 			const textLength = this.shadowRoot.querySelector('.textarea').value.length;
-			const button_save = this.shadowRoot.querySelector('#button-save');
-			const disable_button = false;
+			const saveButton = this.shadowRoot.querySelector('div.button-save');
+			let disableButton = false;
 
 			const maxCharactersInfoText = `${textLength}/${this.config.max_length} max.`;
-			const maxCharactersElem = this.shadowRoot.querySelector('#spanMaxCharactersInfoText');
+			const maxCharactersElem = this.shadowRoot.querySelector('span.info-characters-max');
 			maxCharactersElem.innerHTML = maxCharactersInfoText;
 
 			if (textLength >= this.config.max_length) {
 				maxCharactersElem.classList.add('text-red');
-				disable_button = true;
+				disableButton = true;
 			}
 			else {
 				maxCharactersElem.classList.remove('text-red');
 			}
 			if (textLength <= this.config.max_length) {
-				disable_button = false;
+				disableButton = false;
 			}
 
 			if (this.config.min_length > 0) {
 				const minCharactersInfoText = `${textLength}/${this.config.min_length} min.`;
-				const minCharactersElem = this.shadowRoot.querySelector('#spanMinCharactersInfoText');
+				const minCharactersElem = this.shadowRoot.querySelector('span.info-characters-min');
 				minCharactersElem.innerHTML = minCharactersInfoText;
 
 				if (textLength < this.config.min_length) {
 					minCharactersElem.classList.remove('invisible');
-					disable_button = true;
+					disableButton = true;
 				}
 				else {
 					minCharactersElem.classList.add('invisible');
 				}
 			}
 
-			if (button_save) {
-				if (disable_button) {
-					button_save.classList.add('button-disabled');
-					button_save.classList.add('text-red');
+			if (saveButton) {
+				if (disableButton) {
+					saveButton.classList.add('button-disabled');
+					saveButton.classList.add('text-red');
 				}
 				else {
-					button_save.classList.remove('button-disabled');
-					button_save.classList.remove('text-red');
+					saveButton.classList.remove('button-disabled');
+					saveButton.classList.remove('text-red');
 				}
 			}
 		}
@@ -330,22 +341,22 @@
 						.then(this.config.store_as.includes('state') && saveToStatePromise)
 						.then(this.config.store_as.includes('attribute') && this.config.entity_domain === 'var' && saveToAttributePromise)
 						.then(() => {
-							this.displayMessage(service, true);
+							this.displayResultMessage(service, true);
 						})
 						.catch((error) => {
-							this.displayMessage(service, false);
+							this.displayResultMessage(service, false);
 						});
 				}
 			}
 		}
 
-		displayMessage(service, success) {
-			if (!this.config.show_success_messages || !this.shadowRoot || !service || service.length < 1) {
+		displayResultMessage(service, success) {
+			if (!this.config.display_action_results || !this.shadowRoot || !service || service.length < 1) {
 				return;
 			}
 
-			const serviceMessageContainer = this.shadowRoot.querySelector('#serviceMessage');
-			if (!serviceMessageContainer) {
+			const actionResultMessageContainer = this.shadowRoot.querySelector('div.action-result-message-container');
+			if (!actionResultMessageContainer) {
 				return;
 			}
 
@@ -355,19 +366,19 @@
 			}
 
 			if (message.length) {
-				serviceMessageContainer.innerHTML = message;
-				serviceMessageContainer.classList.remove('invisible');
-				serviceMessageContainer.classList.remove('opacity-0');
+				actionResultMessageContainer.innerHTML = message;
+				actionResultMessageContainer.classList.remove('invisible');
+				actionResultMessageContainer.classList.remove('opacity-0');
 				const buttons = this.shadowRoot.querySelectorAll('.button');
 				buttons.forEach(elem => elem.classList.add('opacity-0'));
 
 				setTimeout(function () {
-					serviceMessageContainer.classList.add('opacity-0');
+					actionResultMessageContainer.classList.add('opacity-0');
 					buttons.forEach(elem => elem.classList.remove('opacity-0'));
 				}, 1500);
 				setTimeout(function () {
-					serviceMessageContainer.classList.add('invisible');
-					serviceMessageContainer.innerHTML = '&nbsp;';
+					actionResultMessageContainer.classList.add('invisible');
+					actionResultMessageContainer.innerHTML = '';
 				}, 2000);
 			}
 		}
@@ -450,22 +461,21 @@
 
 			this.config = {
 				autosave: config.autosave === true,
+				autosave_delay: (isNaN(autosaveDelay) ? 1 : autosaveDelay) * 1000,
+				display_action_results: (config.display_action_results ?? config.show_success_messages) !== false,
 				entity: config.entity,
+				entity_domain: entityDomain,
+				initial_value: config.initial_value || '',
 				max_length: maxLengthConfig,
 				min_length: parseInt(config.min_length) || 0,
 				min_lines_displayed: parseInt(config.min_lines_displayed ?? 2),
 				placeholder_text: config.placeholder_text || '',
+				save_on_clear: config.save_on_clear === true,
 				store_as: storeAsConfig,
 				store_as_attribute_name: config.store_as_attribute_name || 'multiline_text_input',
-				save_on_clear: config.save_on_clear === true,
-				show_success_messages: config.show_success_messages !== false,
 				title: config.title,
 
-				autosave_delay: (isNaN(autosaveDelay) ? 1 : autosaveDelay) * 1000,
-				initial_value: config.initial_value || '',
-				entity_domain: entityDomain,
-				last_updated_text: null,
-				showButtons: config.buttons !== false,
+				show_buttons: config.buttons !== false,
 
 				actions: Object.assign({}, actions),
 				buttons: Object.assign({}, buttons, config.buttons),

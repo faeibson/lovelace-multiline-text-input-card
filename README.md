@@ -2,10 +2,11 @@
 
 This is a simple lovelace card to display a multiline text input field bound on an `input_text` or snarky-snark's `var` [component](https://github.com/snarky-snark/home-assistant-variables/) entity.
 
-However, snarky-snark's `var` [component](https://github.com/snarky-snark/home-assistant-variables/) is recommended to use since Home Assistant limits entity states to a maximum of only 255 characters, while `var` allows us to use attributes with a **limit of 65535 characters (16 KB)** *each* instead. At this point I will not forget to mention that this great component is capable of so much more - have a look at it!
+However, the `var` [component](https://github.com/snarky-snark/home-assistant-variables/) is recommended to use since Home Assistant limits entity states to a maximum of only 255 characters, while `var` allows us to use attributes with a **limit of 65535 characters (16 KB)** *each* instead. At this point I will not forget to mention that this great component is capable of so much more - have a look at it!
 
-As of version 1.0.6 you can not only store the content to the state of the specified entity, but also, if using the `var` component, to its attributes. Now it's possible to use **only one entity to store a lot of independent data** by defining multiple instances of the card each targetting different attributes of the same `var` entity (defined by `store_as_attribute_name`).
-Maybe you would like to have a short main container of the contents, you can still use the `state` even if you're using a `var` entity. Limited to 255 characters. Then you would like to have another two card instances, each allowing up to 16 KB data independently stored in different attributes. Have a look at the [example vertical-stack configuration](#example-vertical-stack-using-one-var-entity-for-multiple-cards)!
+**Since version 1.0.6 you can not only store the content to the state of the specified entity, but also, if using the `var` component, to its attributes. Now it's possible to use *only one entity to store a lot of independent data* by defining multiple instances of the card each targetting different attributes of the same `var` entity (defined by `store_as_attribute_name`).**
+
+Maybe you would like to have a short main container of the contents, you can still use the `state` even if you're using a `var` entity, therefore limited to 255 characters. Then you would like to have another two card instances, each allowing up to 16 KB data independently stored in different attributes. Have a look at the [example vertical-stack configuration](#example-vertical-stack-using-one-var-entity-for-multiple-cards)!
 
 
 
@@ -67,6 +68,7 @@ resources:
 | autosave | bool | `false` | Save changed content automatically after `autosave_delay_seconds`
 | autosave_delay_seconds | int | 1 | Wait `n` seconds after input to trigger the autosave
 | buttons | object/bool | [*(see below)*](#buttons-object) | Set to `false` to hide button row
+| display_action_results | bool | `true` | Displays the result of executed actions, e.g. saving (previously named as `show_success_messages`, which is still supported)
 | icons | object | [*(see below)*](#icons-object) | Set custom button icons (same keys as `buttons` object)
 | initial_value | string | | Defines the initial content if no value is set to the specified entity's state or attribute
 | max_length | int | `65535` | The maximum text length to be allowed (*)
@@ -74,7 +76,6 @@ resources:
 | min_lines_displayed | int | `2` | Determines the text field's minimal displayed height (lines/rows) even if it has less content
 | placeholder_text | string | | Placeholder text to be displayed when empty
 | save_on_clear | bool | `false` | Save empty text after pressing the clear button (no effect along with `min_length`)
-| show_success_messages | bool | `true` | Display message whether backend calls (e.g. saving) were successful or not
 | store_as | Array | `[ 'attribute' ]` for `var` entities<br>`[ 'state' ]` for `input_text`  | Choose between `attribute` or `state` or both to store the content
 | store_as_attribute_name | string | `multiline_text_input` | If the card stores contents as entity attribute, specify the desired attribute name. This also means you can store to different attributes of the same entity by using multiple instances of the card, with different `store_as_attribute_name` values
 | title | string | *friendly_name* | The card title - if undefined, falls back to the entity's `friendly_name` attribute. If set to nothing / null (`"title: "` or `"title: null"`), the card header will not be displayed at all
