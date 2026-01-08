@@ -145,7 +145,8 @@ With the simplest configuration applied, content limits solely depend on the ent
 - The save button will not be shown in favour of the enabled autosave function, and the clear button will appear on the left with the paste button on the right.
 - Last but not least, the icon of the clear button will be changed to `mdi:other-icon`.
 
-### Example vertical stack using one `var` entity for multiple cards
+### Example vertical stack using one `var` entity for multiple cards with independent contents, up to 16 KB each
+*You can save some more space by having autosave enabled and hiding the buttons via adding `buttons: false` to each card's configuration*
 
 ```yaml
 type: vertical-stack
