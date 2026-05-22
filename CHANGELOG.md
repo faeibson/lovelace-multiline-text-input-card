@@ -1,6 +1,9 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## 1.0.8
+- Fixed: Jumping of the cursor after autosave ([#20] - thanks to [@davidmorton0])
+
 ## 1.0.7
 - Fixed: Setting `show_buttons` to `false` resulted in an error
 - Renamed the `show_success_messages` option to `display_action_results` (old name will still work)
@@ -54,5 +57,7 @@ All notable changes to this project will be documented in this file.
 [#15]: /../../issues/15
 [#16]: /../../issues/16
 [#17]: /../../issues/17
+[#20]: /../../pull/20
 [@adamhun94]: https://github.com/adamhun94
 [@ildar170975]: https://github.com/ildar170975
+[@davidmorton0]: https://github.com/davidmorton0
