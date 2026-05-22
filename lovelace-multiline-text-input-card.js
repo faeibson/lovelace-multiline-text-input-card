@@ -247,6 +247,7 @@
 				clearTimeout(this.timeouts.autosave);
 				this.timeouts.autosave = setTimeout(() => {
 					if (this.callAction('save') !== false) {
+						this.config.last_updated_text = this.getText().trimEnd();
 						this.callService('save');
 					}
 				}, this.config.autosave_delay);
